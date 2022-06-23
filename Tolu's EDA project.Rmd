@@ -1,0 +1,154 @@
+---
+title: "Why Health care cost more in some states than others"
+subtitle: "Explained with plots, charts and clustering"  
+author: 
+  - "Toluwalope Roleola"
+
+date: '`r Sys.Date()`'
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    nature:
+      slideNumberFormat: "%current%"
+      highlightStyle: github
+      highlightLines: true
+      ratio: 16:9
+      countIncrementalSlides: true
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(
+  fig.width=9, fig.height=3.5, fig.retina=3,
+  out.width = "100%",
+  cache = FALSE,
+  echo = TRUE,
+  message = FALSE, 
+  warning = FALSE,
+  hiline = TRUE
+)
+
+# Imported imported libraries
+library(tidyverse)
+library(usmap)
+library(ggplot2)
+library(dplyr)
+library(plotly)
+library(maps)
+```
+
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+library(xaringanthemer)
+style_duo_accent(
+  primary_color = "#1381B0",
+  secondary_color = "#FF961C",
+  inverse_header_color = "#FFFFFF"
+)
+```
+###Hypothesis/Background:
+
+
+####Opiods might be contributing unnecessarily to the overall drug cost in most state: According to the The SPACE Randomized Clinical Trial, "the use of opioid versus nonopioid drugs did not result in significantly better pain-related illnesses such as back pain and knee pain over 12 months" 
+  -- Krebs EE, Gravely A, Nugent S, et al. Effect of Opioid vs Nonopioid Medications on Pain-Related Function in Patients With Chronic Back Pain or Hip or Knee Osteoarthritis Pain: The SPACE Randomized Clinical Trial. JAMA. 2018
+    
+
+
+
+
+
+```{r, results = "hide",include = FALSE, echo = FALSE}
+#Used the read_csv command to import our drug cost data
+presc_claims <- 
+  read_csv("http://www.stat.cmu.edu/cmsac/sure/2022/materials/data/health/eda_projects/medicare_partd_presc_claims.csv")
+
+# How the price of Medical oncology drugs Varies By state
+presc_new <- presc_claims %>%
+  select(State, OpioidFlag, TotalDrugCost, BrandName)%>%
+  aggregate(TotalDrugCost ~ OpioidFlag + State  , mean) %>%
+  filter(State %in% c("CA", "FL", "GA", "KS", "KY", "MA", "MD", "MO", "NC",  "NH", "NJ", "NV", "NY", "OK", "OR", "SC", "UT", "VA", "VT", "WV") )%>%
+  filter(TotalDrugCost > 2000)
+
+
+NewTabl <- presc_new %>%
+  select(State, TotalDrugCost) %>%
+  aggregate(TotalDrugCost ~ State, mean)
+  #filter(TotalDrugCost > 1000) %>%
+  #filter(State %in% c("AZ","ME", "MI", "MO", "NC", "ND", "NH", "NJ", "NV", "NY", "OK", "OR", "PA", "SC", "SD", "TN", "UT", "VA", "VT", "WV") )
+NewTabl
+```
+---
+###Reasons for higher overall drug cost in some states than others:
+1) Aging population: Vermont, for example is a state with almost 20% being age 65 and above. The older the population, the more access to healthcare will be needed and hence the more opportunity for healthcare providers to drive up cost to make profit
+
+
+2) Cost of living: States such DC, California with high cost of living tend to have higher health care cost. 
+
+
+3)Unhealthy population: Of course the more unhealthy a population is, the more it would have to spend on healthcare 
+
+
+4)Inflation: Drug prices are not immune from the effect of inflation. In fact,during inflation,  the prices of health care services have increased faster than the cost of other goods and services in the U.S. economy. 
+
+5) Lack of government regulation.
+
+
+---
+
+### Bar chart visualizing how health care cost varies with state
+The graph below shows the cost of healthcare of in 20 of the most expensive states.
+
+
+```{r , echo = FALSE, fig.align = 'center', include = TRUE}
+# Raw bar chart
+NewTabl %>%
+  ggplot (aes (x=reorder (State, -TotalDrugCost) ,y= TotalDrugCost))+
+  geom_bar(stat ="identity")+
+  theme_bw()
+```
+
+---
+###Data showing how opiod affects the cost of drugs in each states:
+
+```{r, echo = FALSE, fig.align = 'center', include = TRUE}
+#Spine bar chart showing the cost by state with individual opioid and non-opioid proportions
+presc_new %>%
+  ggplot(aes(x = reorder (State, -TotalDrugCost),
+             y = TotalDrugCost,
+             fill = OpioidFlag)) + #<<
+  geom_col() + theme_bw()+
+  ggthemes::scale_fill_colorblind()
+```
+States like New Haven have a higher cost of opioids compared to non-opioid drugs.
+---
+![](https://cdn.howmuch.net/articles/annual-deductible-insurance-c963.png)
+
+---
+### US map showing the variation of drug cost by statep
+
+```{r, echo = FALSE, fig.align = 'center', include = TRUE}
+#filtered Healthcare data aggregated by Total drug cost and Opioid flag
+presc_new <- presc_claims %>%
+  select(State, OpioidFlag, TotalDrugCost, BrandName)%>%
+  aggregate(TotalDrugCost ~ OpioidFlag + State  , mean) %>%
+  #filter(State %in% c("CA", "FL", "GA", "KS", "KY", "MA", "MD", "MO", "NC",  "NH", "NJ", "NV", "NY", "OK", "OR", "SC", "UT", "VA", "VT", "WV") )%>%
+  filter(TotalDrugCost > 2000)
+
+#healthcare data reformatted 
+NewTabl <- presc_new %>%
+  select(State, TotalDrugCost) %>%
+  aggregate(TotalDrugCost ~ State, mean)
+  #filter(TotalDrugCost > 1000) %>%
+  #filter(State %in% c("AZ","ME", "MI", "MO", "NC", "ND", "NH", "NJ", "NV", "NY", "OK", "OR", "PA", "SC", "SD", "TN", "UT", "VA", "VT", "WV") )
+
+#US map plot showing how healthcare cost varies by state 
+colnames(NewTabl)[1] <- 'state'
+plot_usmap(data = NewTabl, values = "TotalDrugCost", color = "blue",  ) + 
+  scale_fill_continuous(low = "white", high = "blue", name = "Drug Cost Variation", label = scales::comma) + 
+  labs(title = "USA Region", subtitle = "Drug Cost Variation by State", caption = "Data courtesy of Data.CMS.gov") +
+  theme(legend.position = "right")
+#include =unique(NewTabl$State)
+```
+States with aging population, such as Vermont, show high drug cost.
+
+
+

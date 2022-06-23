@@ -48,7 +48,7 @@ style_duo_accent(
 ###Hypothesis/Background:
 
 
-####Opiods might be contributing unnecessarily to the overall drug cost in most state: According to the The SPACE Randomized Clinical Trial, "the use of opioid versus nonopioid drugs did not result in significantly better pain-related illnesses such as back pain and knee pain over 12 months" 
+####Opiods might be contributing unnecessarily to the overall drug cost in most state: According to the The SPACE Randomized Clinical Trial, "the use of opioid versus nonopioid drugs did not result in significantly better pain-related illnesses such as back pain and knee pain over 12 months." 
   -- Krebs EE, Gravely A, Nugent S, et al. Effect of Opioid vs Nonopioid Medications on Pain-Related Function in Patients With Chronic Back Pain or Hip or Knee Osteoarthritis Pain: The SPACE Randomized Clinical Trial. JAMA. 2018
     
 
@@ -120,6 +120,7 @@ presc_new %>%
 ```
 States like New Haven have a higher cost of opioids compared to non-opioid drugs.
 ---
+
 ![](https://cdn.howmuch.net/articles/annual-deductible-insurance-c963.png)
 
 ---
